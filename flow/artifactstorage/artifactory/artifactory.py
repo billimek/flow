@@ -103,7 +103,7 @@ class Artifactory(Artifact_Storage):
                                                   headers=headers,
                                                   timeout=self.http_timeout)
 
-                    self.check_artifact_permissions(remove_resp, method)
+                    self._check_artifact_permissions(remove_resp, method)
 
                     resp = requests.put(file_url,
                                         auth=(os.getenv('ARTIFACTORY_USER'), os.getenv('ARTIFACTORY_TOKEN')),
@@ -123,7 +123,7 @@ class Artifactory(Artifact_Storage):
                                                   headers=headers,
                                                   timeout=self.http_timeout)
 
-                    self.check_artifact_permissions(remove_resp, method)
+                    self._check_artifact_permissions(remove_resp, method)
 
                     resp = requests.put(file_url,
                                         auth=(BuildConfig.settings.get('artifactory', 'user'),
@@ -144,7 +144,7 @@ class Artifactory(Artifact_Storage):
                                                   headers=headers,
                                                   timeout=self.http_timeout)
 
-                    self.check_artifact_permissions(remove_resp, method)
+                    self._check_artifact_permissions(remove_resp, method)
 
                     resp = requests.put(file_url,
                                         headers=headers,
@@ -162,7 +162,7 @@ class Artifactory(Artifact_Storage):
                                                   headers=headers,
                                                   timeout=self.http_timeout)
 
-                    self.check_artifact_permissions(remove_resp, method)
+                    self._check_artifact_permissions(remove_resp, method)
                     resp = requests.put(file_url, headers=headers, data=zip_file, timeout=self.http_timeout)
         except requests.ConnectionError as e:
             error = str(e)
@@ -410,16 +410,16 @@ class Artifactory(Artifact_Storage):
         if extract:
             # Unzip/untar file downloaded from Artifactory if required
             if extension == "tar.gz" or extension == "tar" or extension == "tgz":
+                commons.print_msg(Artifactory.clazz, method, 'Extracting tar {}'.format(download_path))
                 tar = tarfile.open(download_path)
                 tar.extractall(download_dir)
                 tar.close()
-                commons.print_msg(Artifactory.clazz, method, 'Deploying a tar from {}'.format(download_path))
+                os.remove(download_path)
             if extension == "zip":
+                commons.print_msg(Artifactory.clazz, method, "Extracting zip {}".format(download_path))
                 with zipfile.ZipFile(download_path, "r") as z:
                     z.extractall(download_dir)
-
-                commons.print_msg(Artifactory.clazz, method, "Deploying a zip from {}".format(download_path))
-        print(download_path)
+                os.remove(download_path)
 
         commons.print_msg(Artifactory.clazz, method, 'end')
 
